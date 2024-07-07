@@ -1,7 +1,7 @@
-using System.Buffers;
 using Luban.Defs;
 using Luban.Plugins.Json;
 using MemoryPack;
+using System.Buffers;
 
 namespace Luban.DataTarget.MemoryPack;
 
@@ -10,7 +10,7 @@ public class MemoryPackDataTarget : DataTargetBase
 {
     public static readonly string I18N_DIR = EnvManager.Current.GetOption("i18n", "dir", true);
 
-    protected override string OutputFileExt => "bytes";
+    protected override string DefaultOutputFileExt => "bytes";
 
     private readonly NewtonJsonDataTarget _json_data = new();
 
@@ -18,11 +18,11 @@ public class MemoryPackDataTarget : DataTargetBase
     {
         writer.WriteObjectHeader(1);
 
-        switch(table.Mode)
+        switch (table.Mode)
         {
             case TableMode.ONE:
 
-                if(records.Count <= 0)
+                if (records.Count <= 0)
                 {
                     return;
                 }
@@ -31,7 +31,7 @@ public class MemoryPackDataTarget : DataTargetBase
                 break;
             case TableMode.MAP:
 
-                if(records.Count <= 0)
+                if (records.Count <= 0)
                 {
                     writer.WriteNullCollectionHeader();
                     return;
@@ -39,7 +39,7 @@ public class MemoryPackDataTarget : DataTargetBase
 
                 writer.WriteCollectionHeader(records.Count);
 
-                foreach(var record in records)
+                foreach (var record in records)
                 {
                     MemoryPackDataVisitor.Ins.WriteTableKey(record.Data, ref writer);
                     MemoryPackDataVisitor.Ins.Accept(record.Data, ref writer);
@@ -47,7 +47,7 @@ public class MemoryPackDataTarget : DataTargetBase
 
                 break;
             case TableMode.LIST:
-                if(records.Count <= 0)
+                if (records.Count <= 0)
                 {
                     writer.WriteNullCollectionHeader();
                     return;
@@ -55,7 +55,7 @@ public class MemoryPackDataTarget : DataTargetBase
 
                 writer.WriteCollectionHeader(records.Count);
 
-                foreach(var record in records)
+                foreach (var record in records)
                 {
                     MemoryPackDataVisitor.Ins.Accept(record.Data, ref writer);
                 }
@@ -68,7 +68,7 @@ public class MemoryPackDataTarget : DataTargetBase
     public override OutputFile ExportTable(DefTable table, List<Record> records)
     {
         // 本地化相关内容 仍然使用 json
-        if(_IsI18N(table))
+        if (_IsI18N(table))
         {
             return _json_data.ExportTable(table, records);
         }
@@ -81,14 +81,14 @@ public class MemoryPackDataTarget : DataTargetBase
 
         WriteList(table, records, ref writer);
         writer.Flush();
-        return new OutputFile {File = $"{table.OutputDataFile}.{OutputFileExt}", Content = ms.WrittenSpan.ToArray(),};
+        return new OutputFile { File = $"{table.OutputDataFile}.{OutputFileExt}", Content = ms.WrittenSpan.ToArray(), };
     }
 
     private bool _IsI18N(DefTable table)
     {
-        foreach(var path in table.InputFiles)
+        foreach (var path in table.InputFiles)
         {
-            if(path.Contains(I18N_DIR))
+            if (path.Contains(I18N_DIR))
             {
                 return true;
             }
